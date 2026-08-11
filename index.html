@@ -728,7 +728,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <script>
 /* ── Calculadora Calcule sua isenção e o que já pagou indevidamente ─────────────────────────────────────── */
-var ipData = {};
+var ipData = {anosRestituiveis:anosRestituiveis, };
 
 function ipCalcular() {
   var ipva  = parseFloat(document.getElementById('ip-ipva').value) || 0;
@@ -736,7 +736,10 @@ function ipCalcular() {
   if (ipva <= 0) { alert('Informe o valor do IPVA.'); return; }
 
   var isentaAnual = ipva;
-  var restituicao = ipva * anos;
+  /* Restituicao de tributo prescreve em 5 anos — art. 168 do CTN.
+     Anos alem disso nao sao recuperaveis. */
+  var anosRestituiveis = Math.min(anos, 5);
+  var restituicao = ipva * anosRestituiveis;
   var moraisMin = 2000, moraisMax = 5000;
   var totalMin = restituicao + moraisMin;
   var totalMax = restituicao + moraisMax;
@@ -748,6 +751,7 @@ function ipCalcular() {
     '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><span style="font-size:13px;color:rgba(255,255,255,0.6)">Isenção anual garantida (a partir de agora)</span><span style="font-size:17px;font-weight:700;color:#C9A84C">'+fmt(isentaAnual)+'/ano</span></div>'+
     '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><span style="font-size:13px;color:rgba(255,255,255,0.6)">Restituição de anos anteriores</span><span style="font-size:17px;font-weight:700;color:#C9A84C">'+fmt(restituicao)+'</span></div>'+
     '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><span style="font-size:13px;color:rgba(255,255,255,0.6)">Danos morais estimados</span><span style="font-size:17px;font-weight:700;color:#C9A84C">'+fmt(moraisMin)+' – '+fmt(moraisMax)+'</span></div>';
+  document.getElementById('ip-itens').innerHTML += (anos > 5 ? '<div style="margin-top:10px;padding:12px;background:rgba(255,255,255,0.04);border-left:3px solid #C9A84C"><p style="font-size:12px;color:rgba(255,255,255,0.62);line-height:1.6;margin:0">Considerados apenas os últimos <strong style="color:rgba(255,255,255,0.85)">5 anos</strong> — a restituição de tributo prescreve nesse prazo (art. 168 do CTN).</p></div>' : '') + '<div style="margin-top:16px;padding:14px;background:rgba(255,255,255,0.04);border-left:3px solid #C9A84C"><p style="font-size:12px;color:rgba(255,255,255,0.62);line-height:1.65;margin:0">⚠️ <strong style="color:rgba(255,255,255,0.85)">Estimativa parcial.</strong> O valor final de uma ação costuma superar esta conta, porque só a análise dos seus documentos revela todos os direitos do caso. Não substitui análise jurídica individual.</p></div>';
   document.getElementById('ip-total').textContent = fmt(totalMin)+' – '+fmt(totalMax);
   document.getElementById('ip-result').style.display = 'block';
 }
