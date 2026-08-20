@@ -757,68 +757,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <!-- ══ /CALCULADORA ══════════════════════════════════════════════════════ -->
 
-<script>
-/* ── Calculadora Calcule sua isenção e o que já pagou indevidamente ─────────────────────────────────────── */
-var ipData = {anosRestituiveis:anosRestituiveis, };
 
-function ipCalcular() {
-  var ipva  = parseFloat(document.getElementById('ip-ipva').value) || 0;
-  var anos  = parseFloat(document.getElementById('ip-anos').value) || 0;
-  if (ipva <= 0) { alert('Informe o valor do IPVA.'); return; }
-
-  var isentaAnual = ipva;
-  /* Restituicao de tributo prescreve em 5 anos — art. 168 do CTN.
-     Anos alem disso nao sao recuperaveis. */
-  var anosRestituiveis = Math.min(anos, 5);
-  var restituicao = ipva * anosRestituiveis;
-  var moraisMin = 2000, moraisMax = 5000;
-  var totalMin = restituicao + moraisMin;
-  var totalMax = restituicao + moraisMax;
-
-  ipData = {ipva:ipva, anos:anos, isentaAnual:isentaAnual, restituicao:restituicao, moraisMin:moraisMin, moraisMax:moraisMax, totalMin:totalMin, totalMax:totalMax, total:totalMin};
-
-  var fmt = function(v){ return 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); };
-  document.getElementById('ip-itens').innerHTML =
-    '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><span style="font-size:13px;color:rgba(255,255,255,0.6)">Isenção anual garantida (a partir de agora)</span><span style="font-size:17px;font-weight:700;color:#C9A84C">'+fmt(isentaAnual)+'/ano</span></div>'+
-    '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><span style="font-size:13px;color:rgba(255,255,255,0.6)">Restituição de anos anteriores</span><span style="font-size:17px;font-weight:700;color:#C9A84C">'+fmt(restituicao)+'</span></div>'+
-    '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><span style="font-size:13px;color:rgba(255,255,255,0.6)">Danos morais estimados</span><span style="font-size:17px;font-weight:700;color:#C9A84C">'+fmt(moraisMin)+' – '+fmt(moraisMax)+'</span></div>';
-  document.getElementById('ip-itens').innerHTML += (anos > 5 ? '<div style="margin-top:10px;padding:12px;background:rgba(255,255,255,0.04);border-left:3px solid #C9A84C"><p style="font-size:12px;color:rgba(255,255,255,0.62);line-height:1.6;margin:0">Considerados apenas os últimos <strong style="color:rgba(255,255,255,0.85)">5 anos</strong> — a restituição de tributo prescreve nesse prazo (art. 168 do CTN).</p></div>' : '') + '<div style="margin-top:16px;padding:14px;background:rgba(255,255,255,0.04);border-left:3px solid #C9A84C"><p style="font-size:12px;color:rgba(255,255,255,0.62);line-height:1.65;margin:0">⚠️ <strong style="color:rgba(255,255,255,0.85)">Estimativa parcial.</strong> O valor final de uma ação costuma superar esta conta, porque só a análise dos seus documentos revela todos os direitos do caso. Não substitui análise jurídica individual.</p></div>';
-  document.getElementById('ip-total').textContent = fmt(totalMin)+' – '+fmt(totalMax);
-  document.getElementById('ip-result').style.display = 'block';
-}
-
-function ipEnviarWA() {
-  if (!ipData.total) { ipCalcular(); return; }
-  
-  var fmt = function(v){ return 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); };
-  var msg = 'Olá, Dra. Tairiny! Calculei minha isenção de IPVA no site:\n\n'
-    + '🚗 IPVA pago por ano: '+fmt(ipData.ipva)+'\n'
-    + '📅 Anos pagando indevidamente: '+ipData.anos+' anos\n'
-    + '💰 Restituição estimada: '+fmt(ipData.restituicao)+'\n'
-    + '⚖️ Danos morais estimados: '+fmt(ipData.moraisMin)+' – '+fmt(ipData.moraisMax)+'\n'
-    + '📊 Estimativa total: '+fmt(ipData.totalMin)+' – '+fmt(ipData.totalMax)+'\n\n'
-    + 'Tenho familiar com TEA e quero solicitar a isenção!';
-  
-  // Redirecionamento por potencial
-  var _totalNum = ipData.totalMin;
-  var _isPrio = (_totalNum >= 5000);
-  var _badge = document.getElementById('ip-prio-badge');
-  if (_isPrio && _badge) _badge.style.display = 'block';
-  if (_isPrio) {
-    msg += '\n\n🔥 *CASO PRIORITÁRIO* — Estimativa acima de R$ 5.000. Solicito atendimento urgente!';
-  }
-  window.open('https://wa.me/5561920046994?text='+encodeURIComponent(msg),'_blank');
-}
-
-/* Social proof counter local */
-(function(){
-  var el = document.getElementById('ip-sp-num');
-  if (!el) return;
-  var target = 180 + Math.floor(Math.random() * 120);
-  var n = target - 50;
-  var t = setInterval(function(){ n += 4; if(n>=target){n=target;clearInterval(t);} el.textContent=n; }, 40);
-})();
-</script>
 </footer>
 
 <!-- WA FLUTUANTE -->
@@ -1353,5 +1292,27 @@ function mostrarToast(){
 setTimeout(function(){mostrarToast();setInterval(function(){setTimeout(mostrarToast,Math.random()*8000+2000);},12000);},5000);
 </script>
 
+
+<script>
+/* Revela as secoes. Fica em bloco proprio para nao ser derrubado por erro
+   de outro script, e tem fallback caso o observer nao exista/funcione. */
+(function(){
+  function revelarTudo(){
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('visible'); });
+  }
+  try {
+    if(!('IntersectionObserver' in window)){ revelarTudo(); return; }
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting) e.target.classList.add('visible'); });
+    }, {threshold:.12});
+    document.querySelectorAll('.reveal').forEach(function(el){ obs.observe(el); });
+    /* rede de seguranca: se em 2,5s ainda houver secao invisivel, mostra tudo */
+    setTimeout(function(){
+      var ocultas = document.querySelectorAll('.reveal:not(.visible)');
+      if(ocultas.length > 6) revelarTudo();
+    }, 2500);
+  } catch(err){ revelarTudo(); }
+})();
+</script>
 </body>
 </html>
